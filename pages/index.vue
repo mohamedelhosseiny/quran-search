@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { ref, watch } from "vue";
-  import { useDebounceFn } from "@vueuse/core";
+  import { ref, watch, computed } from "vue";
+  import { useDebounceFn, debouncedRef } from "@vueuse/core";
+  import { useQuranVerses } from "~/composables/useQuranVerses";
 
   interface QuranVerse {
     id: number;
@@ -12,43 +13,18 @@
   }
 
   const searchQuery = ref("");
-  const verses = ref<QuranVerse[]>([]);
-  const isLoading = ref(false);
-  const error = ref<string | null>(null);
+  const debouncedQuery = debouncedRef(searchQuery, 300);
 
-  const fetchVerses = async (query: string) => {
-    if (!query.trim()) {
-      verses.value = [];
-      return;
-    }
+  const { data: verses, isLoading, error } = useQuranVerses(debouncedQuery);
 
-    try {
-      isLoading.value = true;
-      error.value = null;
-      const response = await fetch(
-        `https://quran-search-88e99fc3600d.herokuapp.com/api/lexical/search/${encodeURIComponent(
-          query
-        )}`
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch results");
-
-      const data = await response.json();
-      verses.value = Array.isArray(data.data) ? data.data : [];
-      console.log("API Response:", data); // Debug log
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : "An error occurred";
-      verses.value = [];
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  const debouncedSearch = useDebounceFn(fetchVerses, 300);
-
-  watch(searchQuery, (newQuery: string) => {
-    debouncedSearch(newQuery);
-  });
+  const hasResults = computed(() => verses.value && verses.value.length > 0);
+  const noResults = computed(
+    () =>
+      !isLoading.value &&
+      verses.value &&
+      verses.value.length === 0 &&
+      debouncedQuery.value
+  );
 </script>
 
 <template>
@@ -85,11 +61,11 @@
         v-if="error"
         class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600"
       >
-        {{ error }}
+        {{ error.message }}
       </div>
 
       <!-- Results -->
-      <div v-if="verses.length > 0" class="space-y-4">
+      <div v-if="hasResults" class="space-y-4">
         <QuranVerse
           v-for="verse in verses"
           :key="`${verse.surah_number}-${verse.verse_number}`"
@@ -98,11 +74,8 @@
       </div>
 
       <!-- Empty State -->
-      <div
-        v-else-if="searchQuery && !isLoading"
-        class="text-center py-12 text-gray-500"
-      >
-        لا توجد نتائج لـ "{{ searchQuery }}"
+      <div v-else-if="noResults" class="text-center py-12 text-gray-500">
+        لا توجد نتائج لـ "{{ debouncedQuery }}"
       </div>
 
       <!-- Initial State -->
