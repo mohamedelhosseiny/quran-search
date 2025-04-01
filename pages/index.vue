@@ -2,6 +2,7 @@
   import { ref, watch, computed } from "vue";
   import { useDebounceFn, debouncedRef } from "@vueuse/core";
   import { useQuranVerses } from "~/composables/useQuranVerses";
+  import { Switch } from "~/components/ui/switch";
 
   interface QuranVerse {
     id: number;
@@ -35,6 +36,8 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-2">البحث في القرآن</h1>
         <p class="text-gray-600">ابحث في آيات القرآن الكريم</p>
       </header>
+
+      <!-- <Switch /> -->
 
       <!-- Search Input -->
       <div class="relative mb-8">
