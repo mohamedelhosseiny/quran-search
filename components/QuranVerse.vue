@@ -17,7 +17,7 @@
   const { copy, copied } = useClipboard();
 
   const copyVerse = async () => {
-    await copy(props.verse.verse);
+    await copy(props.verse.verse.replace("۞", ""));
   };
 
   const modifiedVerse = computed(() => {
