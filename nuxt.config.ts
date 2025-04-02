@@ -11,9 +11,5 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ["nuxt-module-hotjar"],
-
-  hotjar: {
-    hotjarId: 5358824,
-  },
+  plugins: [{ src: "@/plugins/hotjar.client.js", mode: "client" }],
 });
