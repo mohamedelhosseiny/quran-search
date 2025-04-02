@@ -12,7 +12,5 @@
 
   const { initialize } = useHotjar();
 
-  function onConsent() {
-    initialize();
-  }
+  initialize();
 </script>
